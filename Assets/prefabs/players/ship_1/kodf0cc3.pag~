@@ -1,0 +1,30 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class camera_movement : MonoBehaviour
+{
+    public Transform target;
+    public GameObject ship;
+    public Vector3 offset;
+    public float smoothSpeed = 0.125f;
+    // Start is called before the first frame update
+    void Start()
+    {
+        offset = new Vector3(0, 5, -10);
+
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        Vector3 desiredpos = ship.GetComponent<Rigidbody>().position + offset;
+        Vector3 smoothedpos = Vector3.Lerp(transform.position, desiredpos, smoothSpeed * Time.deltaTime);
+        transform.position = smoothedpos;
+
+        transform.LookAt(target);
+        //transform.rotation = ship.GetComponent<Rigidbody>().rotation;
+
+
+    }
+}

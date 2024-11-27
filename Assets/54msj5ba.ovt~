@@ -1,0 +1,100 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class player_controls : MonoBehaviour
+{
+    public Rigidbody rb;
+    public camera_movement camscript;
+
+    public float ForwardSpeed = 90f, StrafeSpeed = 90f, HoverSpeed = 90f, RollSpeed = 90f, DashSpeed = 200f;
+    private float ActiveForwardSpeed, ActiveStrafeSpeed, ActiveHoverSpeed, ActiveRollSpeed;
+    private float ForwardAceleration = 2.5f, StrafeAcceleration = 2f, HoverAcceleration = 2f, RollAcceleration = 2f, DashAcceleration = 80f;
+
+    private float LookRateSpeed = 90f;
+    private Vector2 LookInput, ScreenCenter, MouseDistance;
+
+    public bool dash;
+    private bool dashing;
+
+    public AudioSource dash_noise;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        ScreenCenter.x = Screen.width * .5f;
+        ScreenCenter.y = Screen.height * .5f;
+        dash = true;
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+       
+        
+        LookInput.x = Input.mousePosition.x;
+        LookInput.y = Input.mousePosition.y;
+
+        MouseDistance.x = (LookInput.x - ScreenCenter.x) / ScreenCenter.y;
+        MouseDistance.y = (LookInput.y - ScreenCenter.y) / ScreenCenter.y;
+
+        MouseDistance = Vector2.ClampMagnitude(MouseDistance, 1f);
+        Debug.Log(Input.GetAxisRaw("Vertical"));
+        if (Input.GetAxisRaw("Vertical") > 0)
+        {
+            camscript.forwardeffect = true;
+        }
+        else
+        {
+            camscript.forwardeffect = false;
+        }
+        if (dashing == false)
+        {
+            ActiveForwardSpeed = Mathf.Lerp(ActiveForwardSpeed, Input.GetAxisRaw("Vertical") * ForwardSpeed, ForwardAceleration * Time.deltaTime);
+        }
+
+        ActiveRollSpeed = Mathf.Lerp(ActiveRollSpeed, Input.GetAxisRaw("Roll") * RollSpeed, RollAcceleration * Time.deltaTime);
+        ActiveStrafeSpeed = Mathf.Lerp(ActiveStrafeSpeed, Input.GetAxisRaw("Horizontal") * StrafeSpeed, StrafeAcceleration * Time.deltaTime);
+        ActiveHoverSpeed = Mathf.Lerp(ActiveHoverSpeed, Input.GetAxisRaw("Hover") * HoverSpeed, HoverAcceleration * Time.deltaTime);
+
+        transform.position += transform.forward * ActiveForwardSpeed * Time.deltaTime;
+        transform.position += transform.right * ActiveStrafeSpeed * Time.deltaTime;
+        transform.position += transform.up * ActiveHoverSpeed * Time.deltaTime;
+        transform.Rotate(-MouseDistance.y * LookRateSpeed * Time.deltaTime, MouseDistance.x * LookRateSpeed * Time.deltaTime, -ActiveRollSpeed * Time.deltaTime*3, Space.Self);
+        if (Input.GetKeyDown(KeyCode.LeftShift) && (dash))
+        {
+            StartCoroutine(dashcountdown());
+        }
+        if (dashing)
+        {
+            ActiveForwardSpeed = Mathf.Lerp(ActiveForwardSpeed, ForwardSpeed, ForwardAceleration * Time.deltaTime);
+        }
+        
+    }
+    IEnumerator dashcountdown()
+    {
+        dash = false;
+        dashing = true;
+        camscript.boosteffect = true;
+        ForwardSpeed += DashSpeed;
+        ForwardAceleration += DashAcceleration;
+        StartCoroutine(stopspeed());
+        dash_noise.Play();
+        yield return new WaitForSeconds(5);
+        dash = true; 
+    }
+    IEnumerator stopspeed()
+    {
+        yield return new WaitForSeconds(1f);
+        camscript.boosteffect = false;
+        ForwardAceleration -= DashAcceleration;
+        ForwardSpeed -= DashSpeed;
+        dashing = false;
+    }
+
+    
+    
+    
+    
+}
+

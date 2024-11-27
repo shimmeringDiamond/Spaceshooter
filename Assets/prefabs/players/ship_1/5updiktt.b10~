@@ -1,0 +1,92 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class camera_movement : MonoBehaviour
+{
+    public GameObject ship;
+    public bool boosteffect;
+    public bool forwardeffect;
+    public Camera cam;
+    public ParticleSystem trailLeft;
+    public ParticleSystem trailRight;
+
+    //these 2 variables are passed down from player_controls script. dont define them in this script
+    public float boostTimecam;
+    private bool boostonce;
+
+    //boost time is handled in player control script
+
+    public float fov = 60;
+    // Start is called before the first frame update
+    void Start()
+    {
+       
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+        //triggeres when player is boosting
+        if ((boosteffect))
+        {
+            ;
+           //triggers once on player boost event
+            if (boostonce == false)
+            {
+                StartCoroutine(removeboosteffect());
+                var mainl = trailLeft.main;
+                var mainr = trailRight.main;
+                mainl.startLifetime = 0.5f;
+                mainr.startLifetime = 0.5f;
+                mainl.simulationSpeed = 2f;
+                mainr.simulationSpeed = 2f;
+            }
+            boostonce = true;
+            cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, fov + 10f, 0.2f);
+            
+           
+            
+           
+
+        }
+        //triggeres when player is going forward without boosting
+        if ((forwardeffect) && (boosteffect == false))
+        {
+            cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, fov+5f, 0.01f);
+        }
+        //triggeres when player stops going forward
+        if (forwardeffect == false)
+        {
+            cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, fov, 0.2f);
+            var mainl = trailLeft.main;
+            var mainr = trailRight.main;
+            mainl.Clear;
+            mainr.Clear;
+
+
+        }
+
+
+    }
+    //triggeres to remove boost effect
+    IEnumerator removeboosteffect()
+    {
+
+        yield return new WaitForSeconds(boostTimecam-0.4f);
+        var mainl = trailLeft.main;
+        var mainr = trailRight.main;
+        mainl.startLifetime = 0.3f;
+        mainr.startLifetime = 0.3f;
+        mainl.simulationSpeed = 1f;
+        mainr.simulationSpeed = 1f;
+        yield return new WaitForSeconds(0.4f);
+        cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, 60f, 0.2f);
+        boostonce = false;
+      
+       
+       
+
+    }
+}
